@@ -1,14 +1,28 @@
 {
-  "name": "config-updater",
-  "version": "1.0.2",
-  "description": "",
+  "name": "auto-config-updater",
+  "version": "1.0.0",
+  "description": "Things on internet move fast. New versions are being deployed all the time and it is hard to keep track of them. If you have hundreds of services running and some of them requires a specific version of an API you have to either put it in a config file, or in the process ENV.",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
-  "license": "ISC",
+  "author": "Jacques Sirot <jsirot@gmail.com>",
+  "license": "MIT",
   "dependencies": {
     "aws-sdk": "^2.559.0"
-  }
+  },
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/samsoul007/auto-config-updater.git"
+  },
+  "keywords": [
+    "auto",
+    "updater",
+    "config"
+  ],
+  "bugs": {
+    "url": "https://github.com/samsoul007/auto-config-updater/issues"
+  },
+  "homepage": "https://github.com/samsoul007/auto-config-updater#readme"
 }
