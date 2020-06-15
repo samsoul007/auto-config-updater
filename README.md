@@ -1,5 +1,3 @@
-
-
 Things on internet move fast. New versions are being deployed all the time and it is hard to keep track of them. If you have hundreds of services running and some of them requires a specific version of an API you have to either put it in a config file, or in the process ENV.
 
 This is not optimal when new versions of your API provider are available weekly or monthly (ex: Facebook Marketing API) and that they retire the old version shortly after. How do you reliably change those versions without redeploying everything.
@@ -30,16 +28,16 @@ This module only currently supports JSON data. Upon being received the JSON obje
   "test":123,
   "val.a": "value"
 }
-
 ```
 
 When you setup the handler you need to do it on the flat key (ex: if you want to get the `a` value when you need to enter `val.a`)
 
-
 ## setting up a configuration
 
 This module allows multiple variable files to be loaded.
-Right now it only supports from Amazon S3.
+
+
+### Amazon S3
 
 ```javascript
 const CU = require("auto-config-updater")
@@ -48,17 +46,33 @@ const AWS = require("aws-sdk");
 AWS.config.update({...});
 
 /**
- * @param {object}  oS3 AWS s3 object (new AWS.S3()).
+ * @param {object}  s3_object AWS s3 object (new AWS.S3()).
  * @param {string}  bucket Name of S3 bucket.
  * @param {string}  key path to file in S3 bucket.
  * @param {integer} [refresh=60000] refresh time to look in ms.
  * @param {string}  [config='default'] name of the config
  */
-CU.config.fromS3(oS3, bucket, key, refresh, config)
-
 CU.config.fromS3(new AWS.S3(), "mybucket", "mykey", 5000, "my-versions")
+```
 
+### ElasticSearch
 
+```javascript
+const CU = require("auto-config-updater")
+const { Client } = require('@elastic/elasticsearch')
+//setup your ElasticSearch client
+const client = new Client({ node: '...:9200' });
+
+/**
+ * @param {object}  client ElasticSearch client.
+ * @param {string}  index Index in ElasticSearch.
+ * @param {string}  type Type in index.
+ * @param {string}  id Id in index and type.
+ * @param {integer} [refresh=60000] refresh time to look in ms.
+ * @param {string}  [config='default'] name of the config
+ */
+
+CU.config.fromES(client, "index", "type", "id", 5000, "my-versions")
 ```
 
 ## Value change handler

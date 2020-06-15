@@ -28,7 +28,59 @@ const flatten = (data) => {
   return result;
 };
 
+const processValues = (newValues, sConfName) => {
+  return Promise.resolve()
+  .then(() => {
+    const oOldValues = values[sConfName] || {};
+    values[sConfName] = newValues;
+
+    if (handlers[sConfName] && countObjProperties(handlers[sConfName])) {
+      const difference = Object.keys(newValues).filter(k => newValues[k] !== oOldValues[k]);
+      for (let j = 0; j < difference.length; j++) {
+        const key = difference[j];
+
+        if (handlers[sConfName][key]) {
+          for (let i = 0; i < handlers[sConfName][key].length; i++) {
+            handlers[sConfName][key][i](newValues[key], key)
+          }
+        }
+      }
+    }
+  });
+}
+
 const config = {
+  fromES(client, index, type, id, interval, configName) {
+    const sConfName = configName || "default";
+
+    if (configs[sConfName])
+      throw new Error("configuration with this name already setup");
+
+    const newConf = {
+      type: "es",
+      settings: {
+        index,
+        type,
+        id
+      },
+      refresh_interval: interval || (60 * 1000),
+    }
+
+    const fInterval = () => {
+      return client.get({
+        index,
+        type,
+        id
+      })
+      .then(response => response.body._source)
+      .then(newValues => processValues(newValues, sConfName))
+    }
+
+    newConf.interval = setInterval(fInterval, newConf.refresh_interval);
+    fInterval();
+
+    configs[sConfName] = newConf;
+  },
   fromS3(oS3, Bucket, Key, interval, configName) {
     const sConfName = configName || "default";
 
@@ -51,23 +103,7 @@ const config = {
         })
         .promise()
         .then(resp => flatten(JSON.parse(resp.Body.toString())))
-        .then(newValues => {
-          const oOldValues = values[sConfName] || {};
-          values[sConfName] = newValues;
-
-          if (handlers[sConfName] && countObjProperties(handlers[sConfName])) {
-            const difference = Object.keys(newValues).filter(k => newValues[k] !== oOldValues[k]);
-            for (let j = 0; j < difference.length; j++) {
-              const key = difference[j];
-
-              if (handlers[sConfName][key]) {
-                for (let i = 0; i < handlers[sConfName][key].length; i++) {
-                  handlers[sConfName][key][i](newValues[key], key)
-                }
-              }
-            }
-          }
-        });
+        .then(newValues => processValues(newValues, sConfName))
     }
 
     newConf.interval = setInterval(fInterval, newConf.refresh_interval);
